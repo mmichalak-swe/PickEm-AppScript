@@ -1,5 +1,5 @@
 function triggerWeeklyFunctions() {
-  // Trigger every Sunday at 13:00.
+  // Trigger every Sunday near, but after 13:00.
   ScriptApp.newTrigger('lockWeeklyRange')
       .timeBased()
       .onWeekDay(ScriptApp.WeekDay.SUNDAY)
