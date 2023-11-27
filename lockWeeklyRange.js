@@ -1,7 +1,5 @@
 function getProtectedRanges(year, sheetID) {
   const ss = SpreadsheetApp.openById(sheetID);
-  // const year = fetchYear();
-  // const year = '2023';
   const sheet = ss.getSheetByName(year + '_Picks');
   var protections = sheet.getProtections(SpreadsheetApp.ProtectionType.RANGE);
   let protectedRangeNames = [];
@@ -19,13 +17,14 @@ function lockWeeklyRange() {
 
   const mapConfig = readConfig();
   const mapMembers = readMembersObjects();
-  var week = mapConfig.get("week");
+  const year = mapConfig.get("year");
+  const week = mapConfig.get("week");
 
   mapMembers.forEach((value, key, map) => {
     const memberName = key;
     const memberInfo = value;
     const rangeName = 'Week_' + week;
-    const protectedRanges = getProtectedRanges('2023', memberInfo.sheetID);
+    const protectedRanges = getProtectedRanges(year, memberInfo.sheetID);
 
     // Skip protecting the range again in member sheet if already protected
     if (protectedRanges.includes(rangeName)) {
