@@ -133,7 +133,7 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
 
 }
 
-function driver() {
+function driverCreateWeeklySheet() {
     const mapConfig = readConfig();
     const mapMembers = readMembersObjects();
 
