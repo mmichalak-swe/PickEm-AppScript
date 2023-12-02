@@ -22,11 +22,12 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
     let maxRows = sheet.getMaxRows();
     let maxCols = sheet.getMaxColumns();
     const numMembers = Number(mapConfig.get('numMembers'));
-    const colCushion = 4;
-    let rows = numMembers + colCushion; // top three rows above member rows, one below
+    const rowCushion = 3;
+    const colCushion = 3;
+    let rows = numMembers + rowCushion; // top three rows above member rows, one below
     let columns;
 
-    // Removing extra rows, reducing to only member count and the additional 2
+    // Remove extra rows
     if (maxRows < rows){
       sheet.insertRows(maxRows,rows - maxRows);
       Logger.log('added ' + (rows - maxRows) + ' rows');
@@ -34,51 +35,69 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
       sheet.deleteRows(rows,maxRows - rows);
       Logger.log('deleted ' + (maxRows - rows) + ' rows');
     }
+    maxRows = sheet.getMaxRows();
 
-    // Insert arbitrary number of cols, fix later?
-    sheet.insertColumnsAfter(maxCols, 20);
+    // Count number of games for the week
+    let matches = 0;
+    for (let j = 0; j < data.length; j++) {
+      if ( data[j][0] == week ) {
+        matches++;
+      }
+    }
 
-    // Insert Members
+    // Insert correct number of cols based on number of games
+    sheet.insertColumnsAfter(maxCols, 2*matches);
+
+    // Build member array
     const arrMemberNames1D = Array.from(mapMembers.keys());
     const arrMemberNames2D = arrMemberNames1D.map(function(arr) {
       return [arr];
     });
+    // Insert members
+    sheet.getRange(rowCushion + 1,1,numMembers,1).setValues(arrMemberNames2D);
 
-    sheet.getRange(4,1,numMembers,1).setValues(arrMemberNames2D);
-    let bottomHeaders = ['PREFERRED','AWAY','HOME'];
-    sheet.getRange(rows,1,1,3).setValues([bottomHeaders]);
-    
-    // Setting header values
-    sheet.getRange(1,1).setValue('WEEK ' + week);
+  // Format member area
+  sheet.getRange(rowCushion + 1,1,numMembers,colCushion).setHorizontalAlignment("center");
+  sheet.getRange(rowCushion + 1,1,numMembers,colCushion).setFontWeight("bold");
+  sheet.getRange(rowCushion + 1,1,numMembers,colCushion).setBorder(null, null, null, null, true, true, null, null);
+  
+  // Setting header values
     sheet.setColumnWidth(1,120);
-    
-    sheet.getRange(1,2,2,1).setValues([['TOTAL'],['CORRECT']]);
+    sheet.getRange(1,1).setValue('WEEK ' + week);
+    sheet.getRange(1,1,rowCushion - 1,colCushion).merge();
+    sheet.getRange(1,1,rowCushion - 1,colCushion).setBorder(null, null, true, null, null, null, "white", null);
+    sheet.getRange(1,1,rowCushion,1).setFontWeight("bold");
+    sheet.getRange(1,1,rowCushion,1).setFontSize(18);
+    sheet.getRange(1,1,rowCushion,1).setVerticalAlignment("middle");
+    sheet.getRange(1,1,rowCushion,1).setHorizontalAlignment("center");
+
+    sheet.getRange(rowCushion,1,1,1).setValue(['MEMBER']);
+    sheet.getRange(rowCushion,1,1,1).setFontSize(10);
+    sheet.getRange(rowCushion,1,1,1).setFontWeight("bold");
+    sheet.getRange(rowCushion,1,1,1).setHorizontalAlignment("center");
+    sheet.getRange(rowCushion,1,1,1).setBorder(null, null, null, true, null, null, "white", null);
+
     sheet.setColumnWidth(2,90);
-    
-    sheet.getRange(1,3,2,1).setValues([['WEEKLY'],['RANK']]);
+    sheet.getRange(rowCushion,2,1,1).setValue(['POINTS']);
+    sheet.getRange(rowCushion,2,1,1).setFontWeight("bold");
+    sheet.getRange(rowCushion,2,1,1).setHorizontalAlignment("center");
+    sheet.getRange(rowCushion,2,1,1).setBorder(null, null, null, true, null, null, "white", null);
+
     sheet.setColumnWidth(3,90);
-    
-    sheet.getRange(1,4,2,1).setValues([['PERCENT'],['CORRECT']]);
-    sheet.setColumnWidth(4,90);
+    sheet.getRange(rowCushion,3,1,1).setValue(['RECORD']);
+    sheet.getRange(rowCushion,3,1,1).setFontWeight("bold");
+    sheet.getRange(rowCushion,3,1,1).setHorizontalAlignment("center");
 
     // Setting headers for the week's matchups with format of 'AWAY' + '@' + 'HOME', then creating a data validation cell below each
-    let rule,matches = 0;
-    let ptrColumn = 5;
+    let rule = 0;
+    let ptrColumn = colCushion + 1;
+    let formatRules = sheet.getConditionalFormatRules();
     for (let j = 0; j < data.length; j++) {
       if ( data[j][0] == week ) {
-        matches++;
-        // if ( data[j][2] == 1 ) {
-        //   mnf = true;
-        // }
         sheet.getRange(1, ptrColumn).setValue(data[j][6] + '@' + data[j][7]);
         sheet.getRange(1, ptrColumn, 1, 2).mergeAcross();
         sheet.getRange(1, ptrColumn).setHorizontalAlignment("center");
-        // if ( data[j][2] == 1 ) {
-        //   if ( mnfStart == undefined ) {
-        //     mnfStart = ptrColumn;
-        //   }
-        //   mnfEnd = ptrColumn;
-        // }
+
         rule = SpreadsheetApp.newDataValidation().requireValueInList([data[j][6],data[j][7],"TIE"], true).build();
         sheet.getRange(2, ptrColumn).setDataValidation(rule);
         sheet.getRange(2, ptrColumn, 1, 2).mergeAcross();
@@ -88,8 +107,31 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
 
         sheet.getRange(3, ptrColumn, 1, 2).mergeAcross();
         sheet.getRange(3, ptrColumn).setHorizontalAlignment("center");
+        sheet.getRange(3, ptrColumn).setFontWeight("bold");
         sheet.getRange(3, ptrColumn).setFormulaR1C1("IF(R[-1]C[0]=\"\", \"NOT FINAL\", IF(R[-1]C[0]=\"TIE\", \"TIE\", IF(R[-1]C[0]=REGEXEXTRACT(R[-2]C[0],\"(.*)@.*\"),\"AWAY\",\"HOME\")))");
 
+        const startRowRange = rowCushion + 1;
+        const awayPickRange = sheet.getRange(startRowRange, ptrColumn, maxRows - rowCushion, 1);
+        const homePickRange = sheet.getRange(startRowRange, ptrColumn + 1, maxRows - rowCushion, 1);
+        let awayFormula = "=$" + columnToLetter(ptrColumn) + "$" + rowCushion.toString() + "=\"AWAY\"";
+        formatGameAwayPickColumn = SpreadsheetApp.newConditionalFormatRule()
+          .whenFormulaSatisfied(awayFormula)
+          // .setBackground("#E1D6B7") // light orange 13
+          .setBackground("#b7e1cd") // light green
+          .setRanges([awayPickRange])
+          .build();
+        let homeFormula = "=$" + columnToLetter(ptrColumn) + "$" + rowCushion.toString() + "=\"HOME\"";
+        formatGameHomePickColumn = SpreadsheetApp.newConditionalFormatRule()
+          .whenFormulaSatisfied(homeFormula)
+          // .setBackground("#B7E1FF") // light cornflower blue 3
+          .setBackground("#b7e1cd") // light green
+          .setRanges([homePickRange])
+          .build();
+        formatRules.push(formatGameAwayPickColumn);
+        formatRules.push(formatGameHomePickColumn);
+
+
+        sheet.getRange(rowCushion + 1, ptrColumn + 1, maxRows, 1).setBorder(null, null, null, true, null, null, null, null)
         ptrColumn += 2;
       }
     }
@@ -99,41 +141,64 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
     sheet.deleteColumns(ptrColumn, maxCols-ptrColumn+1);
     maxCols = sheet.getMaxColumns();
 
+    // Set formulas for member points
+    const pointsStartCol = 2;
+    const pointsEndColOffset = maxCols - 2;
+    sheet.getRange(rowCushion + 1,pointsStartCol,numMembers,1).setFormulaR1C1("=sumCorrectPicks(R[0]C[2]:R[0]C[" + pointsEndColOffset + "], \"#b7e1cd\")")
+
+    // Set formulas for weekly W-L record
+    const recordStartCol = 3;
+    const recordEndColOffset = maxCols - 3;
+    sheet.getRange(rowCushion + 1,recordStartCol,numMembers,1)
+    .setFormulaR1C1("=getNumberWeeklyWins(R[0]C[1]:R[0]C[" + recordEndColOffset + "], \"#b7e1cd\") & \"-\" & (COUNTA(R[0]C[1]:R[0]C[" + recordEndColOffset + "])-getNumberWeeklyWins(R[0]C[1]:R[0]C[" + recordEndColOffset + "], \"#b7e1cd\"))");
+
+    // Conditional formatting rules for NOT FINAL/TIE/AWAY/HOME
     let range = sheet.getRange(3, colCushion+1, 1, maxCols-colCushion);
     formatRuleRedBackground = SpreadsheetApp.newConditionalFormatRule()
       .whenTextEqualTo("NOT FINAL")
-      .setBackground("#F4C7C3") // red
+      // .setBackground("#F4C7C3") // light red
+      .setBackground("#EA4335") // red
       .setRanges([range])
       .build();
     formatRuleYellowBackground = SpreadsheetApp.newConditionalFormatRule()
       .whenTextEqualTo("TIE")
-      .setBackground("#FCE8B2") // yellow
+      // .setBackground("#FCE8B2") // light yellow
+      // .setBackground("#FBBC04") // yellow
+      .setBackground("#FF6D01") // orange
       .setRanges([range])
       .build();
     formatRuleGreenBackground = SpreadsheetApp.newConditionalFormatRule()
       .whenTextDoesNotContain("NOT FINAL")
-      .setBackground("#B7E1CD") // green
+      // .setBackground("#B7E1CD") // light green
+      .setBackground("#34A853") // green
       .setRanges([range])
       .build();
-    let formatRules = sheet.getConditionalFormatRules();
     formatRules.push(formatRuleRedBackground);
     formatRules.push(formatRuleYellowBackground);
     formatRules.push(formatRuleGreenBackground);
     sheet.setConditionalFormatRules(formatRules);
 
+    // Format frozen rows, cols
+    // Backgrounds and font color for remaining frozen area
     sheet.setFrozenColumns(colCushion);
     sheet.setFrozenRows(3);
     range = sheet.getRange(1,1,2,maxCols);
     range.setBackground('black');
     range.setFontColor('white');
+    range = sheet.getRange(3,1,1,colCushion);
+    range.setBackground('black');
+    range.setFontColor('white');
+
+    // Sorts descending by column B
+    range.sort({column: 2, ascending: false});
 
     // (DONE) merge cells below team dropdown, set formula ="IF(R[0]C[-1]=REGEXEXTRACT(R[0]C[-2],"(.*)@.*"),"AWAY","HOME")"
     // color columns of points green if correct?
-    // SUMIF cells have a certain formatting
+    // (DONE - custom function) SUMIF cells have a certain formatting
 
 }
 
-function driverCreateWeeklySheet() {
+  function driverCreateWeeklySheet() {
     const mapConfig = readConfig();
     const mapMembers = readMembersObjects();
 
