@@ -152,6 +152,9 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
     sheet.getRange(rowCushion + 1,recordStartCol,numMembers,1)
     .setFormulaR1C1("=getNumberWeeklyWins(R[0]C[1]:R[0]C[" + recordEndColOffset + "], \"#b7e1cd\") & \"-\" & (COUNTA(R[0]C[1]:R[0]C[" + recordEndColOffset + "])-getNumberWeeklyWins(R[0]C[1]:R[0]C[" + recordEndColOffset + "], \"#b7e1cd\"))");
 
+    // Set center alignment for member picks
+    sheet.getRange(rowCushion + 1,colCushion + 1,numMembers,maxCols-colCushion).setHorizontalAlignment("center");
+
     // Conditional formatting rules for NOT FINAL/TIE/AWAY/HOME
     let range = sheet.getRange(3, colCushion+1, 1, maxCols-colCushion);
     formatRuleRedBackground = SpreadsheetApp.newConditionalFormatRule()
