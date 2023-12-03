@@ -5,15 +5,21 @@ function getWeeklyMemberPicks() {
 
   const mapConfig = readConfig();
   const mapMembers = readMembersObjects();
+  const sheetID = 'sheetID';
   var week = mapConfig.get("week");
 
   mapMembers.forEach((value, key, map) => {
     const memberName = key;
     const memberInfo = value;
-    const sheetID = 'sheetID';
-    const ssMember = SpreadsheetApp.openById(memberInfo.sheetID);
+    let ssMember;
 
-    // Logger.log(ssMember.getName());
+    // Skip member if no sheet for picks
+    try {
+      ssMember = SpreadsheetApp.openById(memberInfo.sheetID);
+    } catch (error) {
+      Logger.log("No sheet exists for: " + memberName);
+      return;
+    }
 
     dataImport = ssMember.getRangeByName('Week_' + week).getValues();
     // Logger.log(dataImport);

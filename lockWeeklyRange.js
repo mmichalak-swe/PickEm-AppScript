@@ -24,6 +24,16 @@ function lockWeeklyRange() {
     const memberName = key;
     const memberInfo = value;
     const rangeName = 'Week_' + week;
+    let ssMember;
+
+    // Skip member if no sheet for picks
+    try {
+      ssMember = SpreadsheetApp.openById(memberInfo.sheetID);
+    } catch (error) {
+      Logger.log("No sheet exists for: " + memberName);
+      return;
+    }
+
     const protectedRanges = getProtectedRanges(year, memberInfo.sheetID);
 
     // Skip protecting the range again in member sheet if already protected
@@ -31,7 +41,7 @@ function lockWeeklyRange() {
       return;
     }
 
-    const ssMember = SpreadsheetApp.openById(memberInfo.sheetID);
+    ssMember = SpreadsheetApp.openById(memberInfo.sheetID);
 
     range = ssMember.getRangeByName(rangeName);
     var protection = range.protect().setDescription(rangeName + ' picks locked!');
