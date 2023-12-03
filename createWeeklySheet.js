@@ -38,15 +38,15 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
     maxRows = sheet.getMaxRows();
 
     // Count number of games for the week
-    let matches = 0;
+    let numWeeklyGames = 0;
     for (let j = 0; j < data.length; j++) {
       if ( data[j][0] == week ) {
-        matches++;
+        numWeeklyGames++;
       }
     }
 
     // Insert correct number of cols based on number of games
-    sheet.insertColumnsAfter(maxCols, 2*matches);
+    sheet.insertColumnsAfter(maxCols, 2*numWeeklyGames);
 
     // Build member array
     const arrMemberNames1D = Array.from(mapMembers.keys());
@@ -154,6 +154,9 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
 
     // Set center alignment for member picks
     sheet.getRange(rowCushion + 1,colCushion + 1,numMembers,maxCols-colCushion).setHorizontalAlignment("center");
+
+    // Set alternating row colors for member picks
+    sheet.getRange(rowCushion + 1,1,numMembers,maxCols).applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY, false, false);
 
     // Conditional formatting rules for NOT FINAL/TIE/AWAY/HOME
     let range = sheet.getRange(3, colCushion+1, 1, maxCols-colCushion);
