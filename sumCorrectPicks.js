@@ -1,4 +1,4 @@
-function sumCorrectPicks(countRange, colorRef) {
+function sumCorrectPicks(countRange, colorRef, dummy) {
     let ss = SpreadsheetApp.getActiveRange();
     let sheet = SpreadsheetApp.getActiveSheet();
     let activeformula = ss.getFormula();
