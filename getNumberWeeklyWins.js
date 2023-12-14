@@ -1,4 +1,4 @@
-function getNumberWeeklyWins(countRange, colorRef) {
+function getNumberWeeklyWins(countRange, colorRef, dummy) {
     let ss = SpreadsheetApp.getActiveRange();
     let sheet = SpreadsheetApp.getActiveSheet();
     let activeformula = ss.getFormula();
