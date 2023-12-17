@@ -103,7 +103,7 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
     let ptrColumn = colCushion + 1;
     let formatRules = sheet.getConditionalFormatRules();
     for (let j = 0; j < data.length; j++) {
-      if ( data[j][0] == week ) {
+      if ( data[j][0] == week && data[j][13] === true) {
         sheet.getRange(1, ptrColumn).setValue(data[j][6] + '@' + data[j][7]);
         sheet.getRange(1, ptrColumn, 1, 2).mergeAcross();
         sheet.getRange(1, ptrColumn).setHorizontalAlignment("center");

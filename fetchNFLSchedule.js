@@ -138,6 +138,7 @@ function fetchNFLSchedule() {
   var day;
   var dayName;
   var gameId;
+  var playing;
   arr = [];
   
   for ( j = 0; j < (teamsLen - 1); j++ ) {
@@ -171,15 +172,17 @@ function fetchNFLSchedule() {
           dayName = 'Saturday';
         }
         gameId = gameIds[j][k];
-        arr = [week, date, day, hour, minute, dayName, awayTeam, homeTeam, awayTeamLocation, awayTeamName, homeTeamLocation, homeTeamName, gameId];
+        playing = true;
+        arr = [week, date, day, hour, minute, dayName, awayTeam, homeTeam, awayTeamLocation, awayTeamName, homeTeamLocation, homeTeamName, gameId, playing];
         formData.push(arr);
       }
     }
   }
-  var headers = ['week','date','day','hour','minute','dayName','awayTeam','homeTeam','awayTeamLocation','awayTeamName','homeTeamLocation','homeTeamName', 'gameId'];
-  var sheetName = 'NFL_' + year;
+  var headers = ['week','date','day','hour','minute','dayName','awayTeam','homeTeam','awayTeamLocation','awayTeamName','homeTeamLocation','homeTeamName', 'gameId', 'playing?'];
+  // var sheetName = 'NFL_' + year;
+  var sheetName = 'NFL_2023_TEST';
   var rows = formData.length + 1;
-  var columns = formData[0].length;
+  var columns = formData[0].length + (headers.length - formData[0].length);
   
   sheet = ss.getActiveSheet();
   if ( sheet.getSheetName() == 'Sheet1' && ss.getSheetByName(sheetName) == null) {
@@ -204,13 +207,7 @@ function fetchNFLSchedule() {
   if (maxCols > columns){
     sheet.deleteColumns(columns,maxCols - columns);
   }
-  sheet.setColumnWidths(1,columns,30);
-  sheet.setColumnWidth(1, 34);
-  sheet.setColumnWidth(2,60);
-  sheet.setColumnWidth(6,60);
-  sheet.setColumnWidths(9,4,80);
-  sheet.setColumnWidth(13, 64);
-  sheet.clear();
+
   range = sheet.getRange(1,1,1,columns)
   range.setValues([headers]);
   ss.setNamedRange(sheetName+'_HEADERS',range);
@@ -220,12 +217,16 @@ function fetchNFLSchedule() {
   range = sheet.getRange(2,1,formData.length,columns)
   range.setValues(formData);
   ss.setNamedRange(sheetName,range);
-  range.setHorizontalAlignment('left');  
+  range.setHorizontalAlignment('left');
   range.sort([{column: 1, ascending: true},{column: 2, ascending: true},{column: 4, ascending: true},
               {column:  5, ascending: true},{column: 6, ascending: true},{column: 8, ascending: true}]); 
   sheet.getRange(1,3).setNote('-3: Thursday, -2: Friday, -1: Saturday, 0: Sunday, 1: Monday, 2: Tuesday');
   sheet.protect().setDescription(sheetName);
   sheet.setFrozenRows(1);
+  range = sheet.getRange(2,headers.indexOf('playing?') + 1, formData.length, 1);
+  range.insertCheckboxes().check();
+  range.setHorizontalAlignment('center');
+  sheet.autoResizeColumns(1, sheet.getMaxColumns());
   try {
     sheet.hideSheet();
   }
