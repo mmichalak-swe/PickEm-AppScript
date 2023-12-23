@@ -24,7 +24,8 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
     const numMembers = Number(mapConfig.get('numMembers'));
     const rowCushion = 3;
     const colCushion = 3;
-    let rows = numMembers + rowCushion; // top three rows above member rows
+    const rowStats = 2;
+    let rows = numMembers + rowCushion + rowStats; // top three rows above member rows
 
     // Remove extra rows
     if (maxRows < rows){
@@ -202,10 +203,12 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
     formatRules.push(formatRuleRedBackground);
     formatRules.push(formatRuleYellowBackground);
     formatRules.push(formatRuleGreenBackground);
-    sheet.setConditionalFormatRules(formatRules);
+
+    sheet.getRange(rowCushion + numMembers + 1, 1, 1, maxCols).setBorder(true, null, null, null, null, null);
 
     // Format frozen rows, cols
     // Backgrounds and font color for remaining frozen area
+    // Set conditional format rules last!
     sheet.setFrozenColumns(colCushion);
     sheet.setFrozenRows(3);
     range = sheet.getRange(1,1,2,maxCols);
@@ -215,8 +218,7 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
     range.setBackground('black');
     range.setFontColor('white');
 
-    // Sorts descending by column B
-    // range.sort({column: 2, ascending: false});
+    sheet.setConditionalFormatRules(formatRules);
 }
 
   function driverCreateWeeklySheet() {
