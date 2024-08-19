@@ -1,0 +1,4 @@
+8-19-24:
+- master template picks sheet
+- formatting on names for weekly sheet (correct amount of pts wagered in row)
+- auto-gen stats below weekly sheet
