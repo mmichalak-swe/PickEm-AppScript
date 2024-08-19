@@ -179,8 +179,8 @@ function fetchNFLSchedule() {
     }
   }
   var headers = ['week','date','day','hour','minute','dayName','awayTeam','homeTeam','awayTeamLocation','awayTeamName','homeTeamLocation','homeTeamName', 'gameId', 'playing?'];
-  // var sheetName = 'NFL_' + year;
-  var sheetName = 'NFL_2023_TEST';
+  var sheetName = 'NFL_' + year;
+  // var sheetName = 'NFL_2023_TEST';
   var rows = formData.length + 1;
   var columns = formData[0].length + (headers.length - formData[0].length);
   

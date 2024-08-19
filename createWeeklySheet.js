@@ -227,6 +227,7 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
 
     const year = mapConfig.get('year');
     const week = mapConfig.get('week');
+    // const week = '1';
 
     createWeeklySheet(year, week, mapConfig, mapMembers)
 }
