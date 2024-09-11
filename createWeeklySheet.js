@@ -24,7 +24,7 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
     const numMembers = Number(mapConfig.get('numMembers'));
     const rowCushion = 3;
     const colCushion = 3;
-    const rowStats = 2;
+    const rowStats = 4;
     let rows = numMembers + rowCushion + rowStats; // top three rows above member rows
 
     // Remove extra rows
@@ -40,13 +40,14 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
     // Count number of games for the week
     let numWeeklyGames = 0;
     for (let j = 0; j < data.length; j++) {
-      if ( data[j][0] == week ) {
+        if ( data[j][0] == week && data[j][13] === true ) {
         numWeeklyGames++;
       }
     }
 
     // Insert correct number of cols based on number of games
     sheet.insertColumnsAfter(maxCols, 2*numWeeklyGames);
+    maxCols = sheet.getMaxColumns();
 
     // Build member array
     const arrMemberNames1D = Array.from(mapMembers.keys());
@@ -104,7 +105,7 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
     let ptrColumn = colCushion + 1;
     let formatRules = sheet.getConditionalFormatRules();
     for (let j = 0; j < data.length; j++) {
-      if ( data[j][0] == week && data[j][13] === true) {
+      if ( data[j][0] == week && data[j][13] === true ) {
         sheet.getRange(1, ptrColumn).setValue(data[j][6] + '@' + data[j][7]);
         sheet.getRange(1, ptrColumn, 1, 2).mergeAcross();
         sheet.getRange(1, ptrColumn).setHorizontalAlignment("center");
@@ -122,19 +123,17 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
         sheet.getRange(3, ptrColumn).setFormulaR1C1("IF(R[-1]C[0]=\"\", \"NOT FINAL\", IF(R[-1]C[0]=\"TIE\", \"TIE\", IF(R[-1]C[0]=REGEXEXTRACT(R[-2]C[0],\"(.*)@.*\"),\"AWAY\",\"HOME\")))");
 
         const startRowRange = rowCushion + 1;
-        const awayPickRange = sheet.getRange(startRowRange, ptrColumn, maxRows - rowCushion, 1);
-        const homePickRange = sheet.getRange(startRowRange, ptrColumn + 1, maxRows - rowCushion, 1);
+        const awayPickRange = sheet.getRange(startRowRange, ptrColumn, maxRows - rowCushion - rowStats, 1);
+        const homePickRange = sheet.getRange(startRowRange, ptrColumn + 1, maxRows - rowCushion - rowStats, 1);
         let awayFormula = "=$" + columnToLetter(ptrColumn) + "$" + rowCushion.toString() + "=\"AWAY\"";
         formatGameAwayPickColumn = SpreadsheetApp.newConditionalFormatRule()
           .whenFormulaSatisfied(awayFormula)
-          // .setBackground("#E1D6B7") // light orange 13
           .setBackground("#b7e1cd") // light green
           .setRanges([awayPickRange])
           .build();
         let homeFormula = "=$" + columnToLetter(ptrColumn) + "$" + rowCushion.toString() + "=\"HOME\"";
         formatGameHomePickColumn = SpreadsheetApp.newConditionalFormatRule()
           .whenFormulaSatisfied(homeFormula)
-          // .setBackground("#B7E1FF") // light cornflower blue 3
           .setBackground("#b7e1cd") // light green
           .setRanges([homePickRange])
           .build();
@@ -148,7 +147,6 @@ function createWeeklySheet(year, week, mapConfig, mapMembers) {
     }
 
     // Trim excess columns
-    maxCols = sheet.getMaxColumns();
     sheet.deleteColumns(ptrColumn, maxCols-ptrColumn+1);
     maxCols = sheet.getMaxColumns();
 
